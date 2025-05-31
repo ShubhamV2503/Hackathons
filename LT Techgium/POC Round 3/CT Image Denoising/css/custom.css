@@ -1,0 +1,42 @@
+/* Custom Styles */
+.header {
+    text-align: center;
+}
+
+.navbar {
+    border-bottom: 2px solid #ddd;
+}
+
+.navbar-brand h1 {
+    font-weight: 700;
+}
+
+#spinner {
+    display: none;
+}
+
+.owl-carousel-item img {
+    border-radius: 10px;
+}
+
+.btn-light {
+    border: 2px solid #007bff;
+}
+
+.btn-light:hover {
+    background-color: #007bff;
+    color: white;
+}
+#imagePreviewContainer {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+#imagePreview {
+    width: 100%;
+    border-radius: 10px;
+    border: 2px solid #007bff;
+}
