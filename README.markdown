@@ -18,7 +18,7 @@ This repository serves as a collection of my hackathon submissions, showcasing m
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/hackathon-projects.git
+   git clone https://github.com/ShubhamV2503/Hackathons-1.git
    ```
 2. Navigate to a specific project folder to explore its contents and instructions.
 3. Follow the project-specific README or setup guide for running or reproducing the project.
