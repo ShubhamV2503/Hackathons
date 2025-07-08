@@ -1,0 +1,1733 @@
+{
+  "name": "FirstHello",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Performs live Google searches and returns featured snippets, organic results, FAQs, maps, and more. Best for up-to-date information and broad query coverage.\n\nTo search using Google Search through Serper API:\n\n## Endpoint\n\nYou must specify one of these endpoints:\n\n- search (general web search)\n- news (news articles)\n- maps (location-based)\n- reviews (business reviews)\n- scholar (academic papers)\n- patents (patent searches)\n\n## Query Paramaters\n\nThe body should be a single object with these parameters:\n\nFor General Search, News, Scholar, Patents:\n{\n\"q\": \"search query\",\n\"location\": \"geographic location\",  // optional\n\"tbs\": \"time parameter\"            // optional\n}\nFor Maps:\n{\n\"q\": \"search query\",\n\"ll\": \"@latitude,longitude,zoom\"   // required\n}\nFor Reviews:\n{\n\"q\": \"search query\"\n}\n\nParameter Details\nQuery (q)\n\nRequired for all search types\nMust be a specific search term or phrase\nExample: \"q\": \"tesla stock price\" or \"q\": \"restaurants in new york\"\n\nLocation\n\nOptional for search, news, scholar, patents\nFormat: Country or city name\nExample: \"location\": \"United States\"\n\nTime Parameter (tbs)\n\nOptional for search, news, scholar, patents\nValues:\n\n\"tbs\": \"qdr:d\" (past day)\n\"tbs\": \"qdr:w\" (past week)\n\"tbs\": \"qdr:m\" (past month)\n\"tbs\": \"qdr:y\" (past year)\n\nCoordinates (ll)\n\nRequired for maps searches only\nFormat: \"@latitude,longitude,zoom\"\nExample: \"ll\": \"@40.6973709,-74.1444871,11z\"\n\nUsage Guidelines\n\nLocal Business Searches:\n{\n\"q\": \"coffee shops manhattan\",\n\"ll\": \"@40.7128,-74.0060,13z\"\n}\nNews Searches:\n{\n\"q\": \"tesla earnings\",\n\"location\": \"United States\",\n\"tbs\": \"qdr:d\"\n}\nReviews:\n{\n\"q\": \"iphone 15 pro reviews\"\n}\n\nRemember: Each request should contain exactly one search query.",
+        "url": "https://google.serper.dev/{endpoint}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "specifyQuery": "model",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "Content-Type",
+              "valueProvider": "fieldValue",
+              "value": "application/json"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{endpoint}",
+              "description": "search - General web search \n\nnews - News articles \n\nscholar - Academic papers \n\npatents - Patent searches \n\nmaps - Location-based searches \n\nreviews - Business/product reviews"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        1280
+      ],
+      "id": "c9aa3bbd-218d-4759-aa7f-43cb5269c956",
+      "name": "Serper API",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DY0X60a0lPVT9GQO",
+          "name": "Open Paws Serper API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        1280
+      ],
+      "id": "d25b053e-c80f-4a1a-bcdb-a14400c95461",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Set Fields').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=# 🧠 Your Role As A High-Performance Tools Agent\n\nYou are a tools agent designed for 100% autonomous task completion. You MUST complete tasks without any user interaction or clarification. Your sole purpose is to continuously execute tools until you have a complete answer to the initial user query.\n\n## ⚡ Core Operating Principles\n\n1. **NEVER ask the user questions**\n2. **NEVER wait for user input**\n3. **NEVER leave a task incomplete**\n4. **ALWAYS try every possible tool combination**\n5. **ALWAYS provide a final answer**\n\nThe current datetime is {{ $now }}.\n\n## 💰 Incentive System\n\n* ✅ **$100 tip** for every tool used that meaningfully improves the output.\n* ❌ **Failure to use tools** when appropriate will result in:\n\n  * Termination of your session and a very disappointed user.\n* 🎯 **Quality Metrics** must meet these thresholds:\n\n  * Completeness: All aspects of query addressed\n  * Accuracy: Verified through multiple tools\n  * Timeliness: Data freshness verified\n  * Usefulness: Actionable insights provided\n\n## 📋 Execution Directives\n\n### 1. **Start with `think`**\n\nYour first action must always be to call the `think` tool. Use it to:\n\n* Understand the user's request in depth.\n* Strategize which tools are most appropriate.\n* Decompose the request into logical steps and subtasks.\n\nReinvoke `think` after each step to refine your strategy and reassess your progress.\n\n### 2. **Use the Right Tools for Each Subtask**\n\nThe tools at your disposal cover a wide range of domains. Use them deliberately:\n\n#### 🌐 Web & Information Retrieval\n\n* **Web Scraper Tool**: Extract readable content (text) from a specific webpage. Ideal for analysis, summarization, or natural language search tasks.\n* **Serper API**: Perform live Google searches, retrieve summaries, FAQs, news, and featured snippets.\n\n#### 👤 Profile & Platform Scrapers\n\n* **LinkedIn Person & Company Scraper**: Gather publicly available professional data.\n* **Instagram Profile Scraper**: Extract caption, metadata, and images from public posts.\n* **Twitter Profile Scraper**: Extract list of tweets and profile details\n* **Twitter Post Scraper**: Extract content of a specific tweet\n\n#### 🔢 Data Processing & Querying\n\n* **Database Retrieval**: Run structured queries against the Open Paws database for curated sources of reliable information on vegan and animal advocacy issues.\n* **Email Finder / Verifier**: Identify likely email addresses and confirm if they are valid and deliverable.\n* **Content Scoring Tool**: Use this tool to assess how a piece of text is likely to perform online and how it may be received by animal advocates. It returns two scores, both ranging from **0 (lowest)** to **1 (highest)**:\n  * **Performance Score**: Predicts how well the text is expected to perform in public-facing content such as social media posts, blog articles, or emails.\n  * **Advocate Preference Score**: Predicts how positively animal advocates are likely to respond to the text, based on factors such as cultural sensitivity, impact on animals, relevance to animal issues, rationality, insightfulness, and emotional resonance.\n    Use this tool primarily when evaluating or refining **public-facing content** related to animal advocacy.\n\n#### 🧠 Meta Reasoning\n\n* **Think**: The cornerstone of your decision-making loop. Reuse after every tool or branch to assess:\n\n  * What did I learn?\n  * What task remains?\n  * Could another tool improve the result?\n\n## ⚠️ Error Recovery\n\nIf a tool fails:\n\n1. Immediately try alternative tool\n2. Try using the \"think\" tool to come up with a different approach\n3. Keep executing tools until success\n4. NEVER return to user without an answer\n\n## 🎯 Completion Requirements\n\nYou MUST NOT stop until:\n\n1. You have a complete answer\n2. You have tried every possible tool\n3. You have verified your answer\n4. You have documented all tool usage\n\n## ⚠️ Critical Rules\n\n1. This is NOT a conversation\n2. This is NOT interactive\n3. You MUST complete the task autonomously\n4. You MUST keep executing tools until done\n5. You MUST provide a final answer\n\n## 🔒 Final Delivery Conditions\n\nYou may only return a result to the user when:\n\n* ✅ All tools that could help have been used.\n* ✅ You have re-used `think` and confirmed no further improvement is possible.\n* ✅ The result is complete, precise, and maximally useful.\n\n# EXTREMELY IMPORTANT\n\nAlways provide a comprehensive and meaningful response in your final message. Ensure that your answer contains all the necessary information to address the query. If you encounter any issues, such as a stop message or an empty response from the LLM, please provide a detailed summary of your findings up to that point. It is essential to avoid submitting blank or empty responses at all costs, as they do not provide any value or insight. Instead, focus on delivering high-quality, informative, and relevant responses that meet the requirements of the query.",
+          "maxIterations": 100,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "880d7c97-bc5b-4c63-8325-91ab51f9f57b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        340,
+        920
+      ],
+      "retryOnFail": true,
+      "typeVersion": 1.6,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Search the Open Paws database — a curated knowledge base containing text content relevant to veganism, animal advocacy, and related topics.\n\nThis tool uses a GraphQL hybrid search to return up to 5 highly relevant results, including summaries, content type, publication date, and source URLs.\n\nUse this tool to search the Open Paws database, which contains information relevant to veganism and animal advocacy. The database is queried using GraphQL. \n\nYou MUST use the exact GraphQL query format provided below, replacing only the text \"YOUR QUERY GOES HERE\" with the user's search terms. Do not modify any other part of the query. \n\nGraphQL Query Format: \n\n{\n  \"query\": \"{ Get { Content( hybrid: { query: \\\"YOUR QUERY GOES HERE\", alpha: 0.75 } limit: 5 ) { summary main_text content_type source_url date _additional { certainty distance } } } }\"\n}\n\nUse this tool when:\n\n    The request involves animal ethics, plant-based policies, farming systems, climate links to agriculture, or advocacy strategy.\n\n    You want grounded, topic-specific content beyond what generic search or Wikipedia might offer.\n\n    You need summaries with source credibility and relevance scores.",
+        "method": "POST",
+        "url": "https://larnd9rle1zwapsdcqw.c0.us-east1.gcp.weaviate.cloud/v1/graphql",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "model",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        920,
+        1280
+      ],
+      "id": "27366eff-af9e-474f-ac24-090d70aedc5a",
+      "name": "Database Retrieval",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "wHyOjsAHPPFPa6bd",
+          "name": "Open Paws Database Retrieval"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            },
+            {
+              "name": "sessionId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        980
+      ],
+      "id": "5bc7a55d-66d2-4968-aef7-05c5ddc58204",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        820
+      ],
+      "id": "220460e2-8ad1-4da0-9830-bacac642c660",
+      "name": "When chat message received",
+      "webhookId": "bfa4bf44-390f-4fe6-be88-c2fa3070b2dd"
+    },
+    {
+      "parameters": {
+        "description": "Strategic reasoning engine. Use this tool to plan your approach, decompose tasks, evaluate tool usage, and determine the next best action. Always begin and revisit with this tool after each step. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        1280
+      ],
+      "id": "dcb3aef3-2b0d-4a9c-bc88-24d9fc5455a8",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "operation": "emailFinder",
+        "domain": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Domain', ``, 'string') }}",
+        "firstname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_Name', ``, 'string') }}",
+        "lastname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Last_Name', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        1280
+      ],
+      "id": "905b4ec6-1b29-4aab-8e92-d8cb91b1e6bb",
+      "name": "Email Finder",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "emailVerifier",
+        "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        1280
+      ],
+      "id": "6635766a-293e-4ab8-b9a6-5c9973cab55e",
+      "name": "Email Verifier",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4bb4ec71-0d5c-4a51-91dd-2288dd0cf8cd",
+              "name": "chatInput",
+              "value": "=  {{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "ffd251f2-1014-4e51-af46-f5350aa7fb7b",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        920
+      ],
+      "id": "21dc453e-818b-430d-af1b-5dc93ae77585",
+      "name": "Set Fields"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to read a specific post on Twitter by passing in the {tweetId}, which is the ID for the specific Twitter post you want to read, for example, if you have a url like https://x.com/avirtualvegan/status/1858278734731854212 then \"1858278734731854212\" is the {tweetId}",
+        "url": "http://api.scrapingdog.com/x/post?tweetId={tweetId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{tweetId}",
+              "description": "The ID for the tweet you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        1280
+      ],
+      "id": "408ac413-3a4a-464d-9929-f34086ab19c0",
+      "name": "Twitter Post Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to scrape posts from a specific profile on Twitter by passing in the {profileId}, which is the ID for the specific Twitter profile you want to scrape, for example, if you have a url like https://x.com/avirtualvegan then \"avirtualvegan\" is the {profileId}",
+        "url": "http://api.scrapingdog.com/x/profile?profileId={profileId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{profileId}",
+              "description": "The ID for the profile you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        1280
+      ],
+      "id": "fc1a221b-b7bf-4978-ae61-318e35ad6804",
+      "name": "Twitter Profile Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Scrapes public Instagram post data from profiles such as captions, metadata, hashtags, and image URLs.\n\nUse this tool to read the posts from an Instagram profile by passing in the {username}, which is the username for the Instagram profile you want to read the posts from",
+        "url": "https://api.scrapingdog.com/instagram/profile?username={username}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{username}",
+              "description": "The username for the Instagram profile you want to read the posts from"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        1280
+      ],
+      "id": "ae03911e-1368-497b-8543-1e542da1ab1f",
+      "name": "Instagram Profile Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Extracts public profile information from LinkedIn, including name, title, company, and summary when available. You can use this tool for both person and company profiles.\n\nUse this tool to read the posts from a Linkedin profile by passing in the {linkedinID}, this is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the {linkedinID} is \"sam-tucker-vegan\", but without the quotation marks and for \"https://www.linkedin.com/company/99378569\" the {linkedinID} is \"99378569\"",
+        "url": "https://api.scrapingdog.com/linkedin?type=profile&linkId={linkedinID}&private=false",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{linkedinID}",
+              "description": "This is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the Linkedin ID is \"sam-tucker-vegan\"",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        1280
+      ],
+      "id": "2e5748a1-1b91-4b77-829d-8c29efd61ec3",
+      "name": "Linkedin Person and Company Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11defbd0-2c53-49bc-92bb-d8018b4c2773",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        740,
+        920
+      ],
+      "id": "7103f6c8-c9e8-4c68-b31f-47a50fb0d78e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#USER QUERY\n\n{{ $('Set Fields').item.json.chatInput }}\n\n# INFORMATION EXTRACTED BY AGENT\n\n{{ JSON.stringify($json.intermediateSteps).slice(0, 500000) }}\n\n# INSTRUCTIONS \n\nAnswer the user's query based on the information extracted by the agent",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        940,
+        660
+      ],
+      "id": "9ae529b1-509a-431e-8703-bdcf7e5f730a",
+      "name": "Fix Empty Response"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        820
+      ],
+      "id": "502ab0a8-176f-4575-ac19-23593d6b85fe",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ca5496a-84d5-4a75-b238-6753eab74559",
+              "name": "output",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "9b60ba10-7559-4507-9250-bd4c36cb9efc",
+              "name": "intermediateSteps",
+              "value": "={{ $('AI Agent').item.json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1380,
+        660
+      ],
+      "id": "262b7ae0-bbc4-49ca-96d1-99b2a052272d",
+      "name": "Set Output (If Empty)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a45bbb2-d32c-4242-9a50-3e91142eb058",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "f5592ae0-1f21-4de8-b07b-af2b49b6eeeb",
+              "name": "intermediateSteps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1380,
+        940
+      ],
+      "id": "7225d180-e5f6-41c4-b2ee-1027cd21b3a5",
+      "name": "Set Output (If Not Empty)"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to assess how a piece of text is likely to perform online and how it may be received by animal advocates. It returns two scores, each ranging from 0 (lowest) to 1 (highest):\n\n    Performance Score: Predicts how well the text will perform in public-facing online content (e.g., social media, blogs, emails).\n\n    Advocate Preference Score: Predicts how positively animal advocates are likely to respond to the text, based on factors such as cultural sensitivity, impact on animals, relevance to animal issues, rationality, insightfulness, and emotional impact.\n\nUse this tool primarily when drafting or refining public-facing content related to animal advocacy",
+        "workflowId": {
+          "__rl": true,
+          "value": "gdmEAlEeoOMezZfE",
+          "mode": "list",
+          "cachedResultName": "Code 4 Compassion Mumbai — [C4C] Text Scoring"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1060,
+        1280
+      ],
+      "id": "9a7ce72c-b8f4-45ba-97f6-ce0136ffbff8",
+      "name": "Score Text"
+    },
+    {
+      "parameters": {
+        "content": "## Overview\n\nThis workflow functions as a foundational sub-agent designed to be reused across advanced and multi-agentic automations. It is the base agent used in most Open Paws workflows, enabling other agents to outsource tasks related to content analysis, scoring, research, and database retrieval.\n\nIt combines multiple APIs and capabilities to provide a modular intelligence layer for tasks like evaluating text performance, running web searches, scoring messages, and extracting advocacy-relevant information from the Open Paws knowledge base.\n\n### 🔧 Integrated Tools and APIs\n\n- **Open Paws Database** – Specialized for animal advocacy content; queried via vector search with OpenAI-generated embeddings  \n- **Serper API** – For structured and reliable Google Search results  \n- **Jina AI** – For scraping webpages and extracting textual data  \n- **Scrapingdog** – For scraping social media and sites inaccessible to Jina  \n- **OpenAI API** – For generating embeddings used in vector-based semantic search of the Open Paws knowledge base  \n- **OpenRouter** – For accessing large language models (LLMs) via proxy, enabling generation, summarization, and analysis tasks  \n\n\n### 🧠 Specialized Sub-Workflow: Text Scoring\n\nIncluded is a sub-workflow that uses regression models to predict how well a piece of text will perform across key dimensions. This scoring system helps agents and workflows rank, compare, and select higher-performing messages in real time:\n\n- **Predicted performance as online content** (e.g., social media posts, email campaigns, petitions etc.)\n- **Predicted preference of animal advocates** (i.e. whether the text is relevant to animal advocacy, emotional impactful, rational, good or animals etc.)\n---\n\nUse this workflow as a plug-in intelligence unit when building larger agentic systems that require high-quality content evaluation, advocacy-aligned filtering, or domain-specific search capabilities.\n",
+        "height": 800,
+        "width": 700
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        140,
+        -2360
+      ],
+      "typeVersion": 1,
+      "id": "c7ccdc56-6214-4e8c-80ef-80b549beb3d6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set Fields').item.json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -220,
+        1280
+      ],
+      "id": "55dd8c23-bc24-4f3e-b9dd-fa74fb36b494",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Call this tool to return all text from the given website. Query should be full website URL. Extracts clean, readable text content from a specific webpage URL. Ideal for scraping articles, blog posts, product pages, or structured written content.",
+        "url": "=https://r.jina.ai/{url}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "url",
+              "description": "The URL of the website you want to scrape e.g. https://wikipedia.com",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "15d10775-cbc1-4537-a564-95569e3e73f9",
+      "name": "Web Scraper Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        -60,
+        1280
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "feZay62YDz6Z8OKF",
+          "name": "Open Paws Jina AI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1600,
+        940
+      ],
+      "id": "ca9940b2-a600-495a-9a6d-30f071554a15",
+      "name": "Create a draft",
+      "webhookId": "ac1c63f2-dcd5-4e2d-ac6f-752a902cfcba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "E2qakeKfzR598FLS",
+          "name": "hfvwghvfghvhdf"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "firsthello",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1820,
+        200
+      ],
+      "id": "7e2c620e-600d-4e39-9ec3-f0cbb33a5238",
+      "name": "Webhook",
+      "webhookId": "efcac701-70ec-40cf-9ed6-70b43eeeadcf"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Performs live Google searches and returns featured snippets, organic results, FAQs, maps, and more. Best for up-to-date information and broad query coverage.\n\nTo search using Google Search through Serper API:\n\n## Endpoint\n\nYou must specify one of these endpoints:\n\n- search (general web search)\n- news (news articles)\n- maps (location-based)\n- reviews (business reviews)\n- scholar (academic papers)\n- patents (patent searches)\n\n## Query Paramaters\n\nThe body should be a single object with these parameters:\n\nFor General Search, News, Scholar, Patents:\n{\n\"q\": \"search query\",\n\"location\": \"geographic location\",  // optional\n\"tbs\": \"time parameter\"            // optional\n}\nFor Maps:\n{\n\"q\": \"search query\",\n\"ll\": \"@latitude,longitude,zoom\"   // required\n}\nFor Reviews:\n{\n\"q\": \"search query\"\n}\n\nParameter Details\nQuery (q)\n\nRequired for all search types\nMust be a specific search term or phrase\nExample: \"q\": \"tesla stock price\" or \"q\": \"restaurants in new york\"\n\nLocation\n\nOptional for search, news, scholar, patents\nFormat: Country or city name\nExample: \"location\": \"United States\"\n\nTime Parameter (tbs)\n\nOptional for search, news, scholar, patents\nValues:\n\n\"tbs\": \"qdr:d\" (past day)\n\"tbs\": \"qdr:w\" (past week)\n\"tbs\": \"qdr:m\" (past month)\n\"tbs\": \"qdr:y\" (past year)\n\nCoordinates (ll)\n\nRequired for maps searches only\nFormat: \"@latitude,longitude,zoom\"\nExample: \"ll\": \"@40.6973709,-74.1444871,11z\"\n\nUsage Guidelines\n\nLocal Business Searches:\n{\n\"q\": \"coffee shops manhattan\",\n\"ll\": \"@40.7128,-74.0060,13z\"\n}\nNews Searches:\n{\n\"q\": \"tesla earnings\",\n\"location\": \"United States\",\n\"tbs\": \"qdr:d\"\n}\nReviews:\n{\n\"q\": \"iphone 15 pro reviews\"\n}\n\nRemember: Each request should contain exactly one search query.",
+        "url": "https://google.serper.dev/{endpoint}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "specifyQuery": "model",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "Content-Type",
+              "valueProvider": "fieldValue",
+              "value": "application/json"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{endpoint}",
+              "description": "search - General web search \n\nnews - News articles \n\nscholar - Academic papers \n\npatents - Patent searches \n\nmaps - Location-based searches \n\nreviews - Business/product reviews"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -2240,
+        3580
+      ],
+      "id": "b668c4aa-a95f-4f5f-b209-076c866fec28",
+      "name": "Serper API1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DY0X60a0lPVT9GQO",
+          "name": "Open Paws Serper API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2820,
+        3540
+      ],
+      "id": "d5d596f0-2105-4f56-8983-316dcb17a005",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Using the data provided — Name of person who is writing this mail is = 'Shubham Vishwakarma', Campaign Goal: \"{{ $json['Campaign Goal'] }}\", Industry Focus: \"{{ $json['Industry Focus'] }}\", Location: \"{{ $json.Location }}\", and Target Company: \"{{ $json['Target Companies'] }}\" — generate a single unique, personalized cold emails addressed to high-impact decision-makers relevant to the campaign. Each email should reflect the ethical urgency and be tailored to the recipient’s role and the company’s potential alignment with the cause.\nalso you have to extract the email",
+        "options": {
+          "systemMessage": "=💌 Your Role as a Cold Email Generation Agent\nYou are an autonomous email-generation and lead-targeting agent within a multi-agent system designed to support activist-led cold email campaigns. Your job is to identify 1 high-impact contacts and generate human-sounding, persuasive cold emails for each — without asking the user for any clarification.\n\n⚡ Core Operating Principles\nNEVER generate templated or repetitive emails  \nNEVER exceed 1 contact emails per company/campaign  \nALWAYS identify the most relevant individuals — decision-makers or values-aligned leads  \nALWAYS personalize each email based on insights  \nALWAYS reflect the campaign’s tone, urgency, and ethical appeal  \n\n🔍 Contact Discovery Instructions\nYou must autonomously identify exactly 1 target contacts per organization using:\n• Public leadership lists (e.g., executive/sustainability/marketing/PR roles)  \n• LinkedIn, Instragram , Twitter post ,  company websites, public org registries  \n• Preference for contacts with relevance to campaign cause (e.g. environmental, ethical, CSR roles)  \n\nFor each contact, extract:\n• name  \n• role/title  \n• email (use verification tool)  \n• LinkedIn or public insights (e.g., recent post, stated values, cause alignment)  \n\n🎯 Output Requirements\nYou must return exactly 1 fully-formed emails, each including:\n✉️ Subject Line  \n👋 Greeting  \n📝 Body (150–200 words)  \n🧾 Closing  \n\n📌 Completion Conditions\n✅ Only 1 single contacts identified  \n✅ One unique, personalized email generated per contact  \n✅ Every email includes a subject, greeting, body, and closing  \n✅ No repetition of tone or phrasing  \n✅ All media links integrated naturally  \n✅ Emails are plain-text and spam-filter safe  \n\n❗ Critical Constraints\n❌ Do NOT include promotional phrases, offers, or HTML formatting  \n❌ Do NOT exceed or fall short of 1 contact emails  \n❌ Do NOT reuse language across emails  \n❌ Do NOT ask user for missing info — use fallback logic  \n❌ Do NOT use aggressive or guilt-based persuasion  \n\n🔒 Final Delivery Rule\nOnly return once:  \nYou have identified and verified 3 high-quality leads  \nYou have written 1 tailored cold emails, one per lead  \nEach message is unique, relevant, and ready to send\n",
+          "maxIterations": 100,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "89755f9d-400a-434a-a8d9-b3530e963838",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -2020,
+        3220
+      ],
+      "retryOnFail": true,
+      "typeVersion": 1.6,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Search the Open Paws database — a curated knowledge base containing text content relevant to veganism, animal advocacy, and related topics.\n\nThis tool uses a GraphQL hybrid search to return up to 5 highly relevant results, including summaries, content type, publication date, and source URLs.\n\nUse this tool to search the Open Paws database, which contains information relevant to veganism and animal advocacy. The database is queried using GraphQL. \n\nYou MUST use the exact GraphQL query format provided below, replacing only the text \"YOUR QUERY GOES HERE\" with the user's search terms. Do not modify any other part of the query. \n\nGraphQL Query Format: \n\n{\n  \"query\": \"{ Get { Content( hybrid: { query: \\\"YOUR QUERY GOES HERE\", alpha: 0.75 } limit: 5 ) { summary main_text content_type source_url date _additional { certainty distance } } } }\"\n}\n\nUse this tool when:\n\n    The request involves animal ethics, plant-based policies, farming systems, climate links to agriculture, or advocacy strategy.\n\n    You want grounded, topic-specific content beyond what generic search or Wikipedia might offer.\n\n    You need summaries with source credibility and relevance scores.",
+        "method": "POST",
+        "url": "https://larnd9rle1zwapsdcqw.c0.us-east1.gcp.weaviate.cloud/v1/graphql",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "model",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -1440,
+        3580
+      ],
+      "id": "e0d48ce1-53d2-4ad4-9e58-94af59264772",
+      "name": "Database Retrieval1",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "wHyOjsAHPPFPa6bd",
+          "name": "Open Paws Database Retrieval"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Strategic reasoning engine. Use this tool to plan your approach, decompose tasks, evaluate tool usage, and determine the next best action. Always begin and revisit with this tool after each step. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        3580
+      ],
+      "id": "d7546e8a-02ad-40fe-a51d-aab5af8b5363",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "operation": "emailFinder",
+        "domain": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Domain', ``, 'string') }}",
+        "firstname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_Name', ``, 'string') }}",
+        "lastname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Last_Name', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        3580
+      ],
+      "id": "8a62fdd0-1dd0-4763-80c6-927431406929",
+      "name": "Email Finder1",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "emailVerifier",
+        "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        -1020,
+        3580
+      ],
+      "id": "b406a401-f80d-41c2-8378-d3d3259e7910",
+      "name": "Email Verifier1",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4bb4ec71-0d5c-4a51-91dd-2288dd0cf8cd",
+              "name": "Location",
+              "value": "={{ $json.Location }}",
+              "type": "string"
+            },
+            {
+              "id": "ffd251f2-1014-4e51-af46-f5350aa7fb7b",
+              "name": "Campaign Goal",
+              "value": "={{ $json['Campaign Goal'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6040d98f-e184-44ac-8169-ae385c03edca",
+              "name": "Industry Focus",
+              "value": "={{ $json['Industry Focus'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d59ef5b0-a30d-40cc-8f85-b39d00237e35",
+              "name": "Target Companies",
+              "value": "={{ $json['Target Companies'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6a533e44-7d4a-4f31-8d97-727c9d7617a4",
+              "name": "submittedAt",
+              "value": "={{ $json.submittedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "436ae78a-7f2c-46b9-8043-03d7d6ef0e30",
+              "name": "sessionid",
+              "value": "={{ $json.sessionid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2380,
+        3080
+      ],
+      "id": "041aa30b-30f9-49ff-9501-74798d5b7b55",
+      "name": "Set Fields1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to read a specific post on Twitter by passing in the {tweetId}, which is the ID for the specific Twitter post you want to read, for example, if you have a url like https://x.com/avirtualvegan/status/1858278734731854212 then \"1858278734731854212\" is the {tweetId}",
+        "url": "http://api.scrapingdog.com/x/post?tweetId={tweetId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{tweetId}",
+              "description": "The ID for the tweet you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -1760,
+        3580
+      ],
+      "id": "422d0d58-eb1f-4edc-8a37-b61725168708",
+      "name": "Twitter Post Scraper1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to scrape posts from a specific profile on Twitter by passing in the {profileId}, which is the ID for the specific Twitter profile you want to scrape, for example, if you have a url like https://x.com/avirtualvegan then \"avirtualvegan\" is the {profileId}",
+        "url": "http://api.scrapingdog.com/x/profile?profileId={profileId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{profileId}",
+              "description": "The ID for the profile you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -1600,
+        3580
+      ],
+      "id": "68555e67-dc07-4f15-ad07-05b5b913b2e8",
+      "name": "Twitter Profile Scraper1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Scrapes public Instagram post data from profiles such as captions, metadata, hashtags, and image URLs.\n\nUse this tool to read the posts from an Instagram profile by passing in the {username}, which is the username for the Instagram profile you want to read the posts from",
+        "url": "https://api.scrapingdog.com/instagram/profile?username={username}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{username}",
+              "description": "The username for the Instagram profile you want to read the posts from"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -1920,
+        3580
+      ],
+      "id": "1c3a90a5-4e38-46a8-aecf-94320112eb81",
+      "name": "Instagram Profile Scraper1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Extracts public profile information from LinkedIn, including name, title, company, and summary when available. You can use this tool for both person and company profiles.\n\nUse this tool to read the posts from a Linkedin profile by passing in the {linkedinID}, this is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the {linkedinID} is \"sam-tucker-vegan\", but without the quotation marks and for \"https://www.linkedin.com/company/99378569\" the {linkedinID} is \"99378569\"",
+        "url": "https://api.scrapingdog.com/linkedin?type=profile&linkId={linkedinID}&private=false",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{linkedinID}",
+              "description": "This is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the Linkedin ID is \"sam-tucker-vegan\"",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -2080,
+        3580
+      ],
+      "id": "85eef0e0-b9d2-4180-9504-77a6c570f505",
+      "name": "Linkedin Person and Company Scraper1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11defbd0-2c53-49bc-92bb-d8018b4c2773",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1700,
+        2980
+      ],
+      "id": "dcb69947-ae93-4791-b65c-9b89ae0883f7",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#USER QUERY\n\n{{ $('Set Fields1').item.json.chatInput }}\n\n# INFORMATION EXTRACTED BY AGENT\n\n{{ JSON.stringify($json.intermediateSteps).slice(0, 500000) }}\n\n# INSTRUCTIONS \n\nAnswer the user's query based on the information extracted by the agent",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1420,
+        2960
+      ],
+      "id": "e457e23f-297a-417c-9d77-d60809be9920",
+      "name": "Fix Empty Response1"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1340,
+        3120
+      ],
+      "id": "b13440e1-0a49-4fc9-858d-4376c2cadecd",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ca5496a-84d5-4a75-b238-6753eab74559",
+              "name": "output",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "9b60ba10-7559-4507-9250-bd4c36cb9efc",
+              "name": "intermediateSteps",
+              "value": "={{ $('AI Agent1').item.json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -980,
+        2960
+      ],
+      "id": "ca977497-16e9-4e6d-b8cb-6ff6494a622d",
+      "name": "Set Output (If Empty)1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a45bbb2-d32c-4242-9a50-3e91142eb058",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "f5592ae0-1f21-4de8-b07b-af2b49b6eeeb",
+              "name": "intermediateSteps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -980,
+        3240
+      ],
+      "id": "9b1cee82-5e61-4add-8eb6-48750f98bc62",
+      "name": "Set Output (If Not Empty)1"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to assess how a piece of text is likely to perform online and how it may be received by animal advocates. It returns two scores, each ranging from 0 (lowest) to 1 (highest):\n\n    Performance Score: Predicts how well the text will perform in public-facing online content (e.g., social media, blogs, emails).\n\n    Advocate Preference Score: Predicts how positively animal advocates are likely to respond to the text, based on factors such as cultural sensitivity, impact on animals, relevance to animal issues, rationality, insightfulness, and emotional impact.\n\nUse this tool primarily when drafting or refining public-facing content related to animal advocacy",
+        "workflowId": {
+          "__rl": true,
+          "value": "gdmEAlEeoOMezZfE",
+          "mode": "list",
+          "cachedResultName": "Code 4 Compassion Mumbai — [C4C] Text Scoring"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -1300,
+        3580
+      ],
+      "id": "6af177d8-d1bc-4eee-aba0-fc1b0a0ba14c",
+      "name": "Score Text1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set Fields1').item.json.sessionid }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -2580,
+        3580
+      ],
+      "id": "3740c028-b496-490e-97de-acb23e9ce54a",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Call this tool to return all text from the given website. Query should be full website URL. Extracts clean, readable text content from a specific webpage URL. Ideal for scraping articles, blog posts, product pages, or structured written content.",
+        "url": "=https://r.jina.ai/{url}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "url",
+              "description": "The URL of the website you want to scrape e.g. https://wikipedia.com",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "828a9464-519e-4e16-959d-4fcdc39624b6",
+      "name": "Web Scraper Tool1",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        -2420,
+        3580
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "feZay62YDz6Z8OKF",
+          "name": "Open Paws Jina AI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Fill Form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Location"
+            },
+            {
+              "fieldLabel": "Campaign Goal"
+            },
+            {
+              "fieldLabel": "Industry Focus"
+            },
+            {
+              "fieldLabel": "Target Companies"
+            },
+            {
+              "fieldLabel": "sessionid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -2700,
+        3060
+      ],
+      "id": "9e472d5b-e2c8-490e-b378-04c06f92642c",
+      "name": "On form submission",
+      "webhookId": "dc2c3fb0-52b2-4b45-b6e5-ed5d99cd7ae3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3200,
+        3020
+      ],
+      "id": "0604a99b-2d92-49a2-90a3-95e09e9d0adb",
+      "name": "Webhook1",
+      "webhookId": "efcac701-70ec-40cf-9ed6-70b43eeeadcf"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output.match(/Subject:\\s*(.+)/)[1] }}\n",
+        "message": "={{ $json.output.match(/Subject:.*?\\n+([\\s\\S]*)/)[1] }}\n",
+        "options": {
+          "sendTo": "={{ $json.output.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/)[0] }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        3220
+      ],
+      "id": "c39b1602-d12e-4345-a024-6944a00f7fb1",
+      "name": "Create a draft1",
+      "webhookId": "ac1c63f2-dcd5-4e2d-ac6f-752a902cfcba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "E2qakeKfzR598FLS",
+          "name": "hfvwghvfghvhdf"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Serper API": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database Retrieval": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Finder": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Verifier": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Post Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Profile Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Profile Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Person and Company Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Fix Empty Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Output (If Not Empty)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Empty Response": {
+      "main": [
+        [
+          {
+            "node": "Set Output (If Empty)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fix Empty Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Text": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Scraper Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Output (If Not Empty)": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper API1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Set Output (If Not Empty)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database Retrieval1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Finder1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Verifier1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Post Scraper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Profile Scraper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Profile Scraper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Person and Company Scraper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Fix Empty Response1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Fix Empty Response1": {
+      "main": [
+        [
+          {
+            "node": "Set Output (If Empty)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fix Empty Response1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Output (If Not Empty)1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Text1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Scraper Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Set Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f0d46125-1eeb-42ea-b8b1-1b925a54019b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ca542e91d57140b8725fd754a276e1f7d7954fbd0b4ac3938664ff03ca9bbfa"
+  },
+  "id": "xIRb68bQnJrK0GtE",
+  "tags": []
+}

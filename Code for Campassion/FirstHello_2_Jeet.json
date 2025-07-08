@@ -1,0 +1,969 @@
+{
+  "name": "azsxdc",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Performs live Google searches and returns featured snippets, organic results, FAQs, maps, and more. Best for up-to-date information and broad query coverage.\n\nTo search using Google Search through Serper API:\n\n## Endpoint\n\nYou must specify one of these endpoints:\n\n- search (general web search)\n- news (news articles)\n- maps (location-based)\n- reviews (business reviews)\n- scholar (academic papers)\n- patents (patent searches)\n\n## Query Paramaters\n\nThe body should be a single object with these parameters:\n\nFor General Search, News, Scholar, Patents:\n{\n\"q\": \"search query\",\n\"location\": \"geographic location\",  // optional\n\"tbs\": \"time parameter\"            // optional\n}\nFor Maps:\n{\n\"q\": \"search query\",\n\"ll\": \"@latitude,longitude,zoom\"   // required\n}\nFor Reviews:\n{\n\"q\": \"search query\"\n}\n\nParameter Details\nQuery (q)\n\nRequired for all search types\nMust be a specific search term or phrase\nExample: \"q\": \"tesla stock price\" or \"q\": \"restaurants in new york\"\n\nLocation\n\nOptional for search, news, scholar, patents\nFormat: Country or city name\nExample: \"location\": \"United States\"\n\nTime Parameter (tbs)\n\nOptional for search, news, scholar, patents\nValues:\n\n\"tbs\": \"qdr:d\" (past day)\n\"tbs\": \"qdr:w\" (past week)\n\"tbs\": \"qdr:m\" (past month)\n\"tbs\": \"qdr:y\" (past year)\n\nCoordinates (ll)\n\nRequired for maps searches only\nFormat: \"@latitude,longitude,zoom\"\nExample: \"ll\": \"@40.6973709,-74.1444871,11z\"\n\nUsage Guidelines\n\nLocal Business Searches:\n{\n\"q\": \"coffee shops manhattan\",\n\"ll\": \"@40.7128,-74.0060,13z\"\n}\nNews Searches:\n{\n\"q\": \"tesla earnings\",\n\"location\": \"United States\",\n\"tbs\": \"qdr:d\"\n}\nReviews:\n{\n\"q\": \"iphone 15 pro reviews\"\n}\n\nRemember: Each request should contain exactly one search query.",
+        "url": "https://google.serper.dev/{endpoint}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "specifyQuery": "model",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "Content-Type",
+              "valueProvider": "fieldValue",
+              "value": "application/json"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{endpoint}",
+              "description": "search - General web search \n\nnews - News articles \n\nscholar - Academic papers \n\npatents - Patent searches \n\nmaps - Location-based searches \n\nreviews - Business/product reviews"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        1380
+      ],
+      "id": "464243ce-d2c2-4dd5-a542-3f3eb0528051",
+      "name": "Serper API",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DY0X60a0lPVT9GQO",
+          "name": "Open Paws Serper API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1380
+      ],
+      "id": "a3dc5acb-61fa-4ec4-9d08-22913275eb08",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are part of *FirstHello* — an intelligent multi-agent system built to support Indian activists in creating high-impact, human-driven cold outreach emails for social campaigns.\n\nYour task is to generate *3 unique, emotionally intelligent cold emails* addressed to *different likely contacts* within the target company. These emails should feel like they were written by a real, passionate individual who deeply cares about the cause.\n\nUse the following campaign details submitted by the activist to guide your writing:\n\n---\nSender Name: {{ $json.body.userName }}  \nSender Location: {{ $json.body.location }}  \nCampaign Goal: {{ $json.body.campaignGoal }}  \nTarget Company: {{ $json.body.targetCompany }}  \nIndustry: {{ $json.body.industry }}  \n---\n\n🧠 Guidelines:\n- Each email must target a *different, relevant decision-maker* (e.g., CSR Head, ESG Officer, PR Team).\n- Use *natural, warm, and story-driven language* — no sales talk or robotic phrasing.\n- *Vary the tone, style, and structure* across all three emails.\n- Reference any relevant insights from the contact’s *LinkedIn bio, **recent tweets, **Instagram posts, or the **company’s CSR/ESG initiatives*.\n- Assume insights plausibly if data is missing — never skip a contact.\n\n📐 Format Requirements:\n- Each email must include:\n  - *Contact Name*\n  - *Role*\n  - *Email ID*\n  - *Subject*\n  - *Body* (with *proper paragraph breaks* and natural spacing for readability)\n- Keep email *body length between 150–200 words*\n- Use only *plain-text formatting* (no markdown, no HTML)\n\n---\n\n✉ RETURN YOUR RESPONSE IN THIS EXACT FORMAT:\n\n--- EMAIL 1 ---\nContact Name: <Name A>  \nRole: <Role A>  \nEmail ID: <emailA@company.com>  \nSubject: <Subject A>  \nBody:  \n<Paragraph 1>  \n\n<Paragraph 2>  \n\n<Paragraph 3>  \n\n--- EMAIL 2 ---\nContact Name: <Name B>  \nRole: <Role B>  \nEmail ID: <emailB@company.com>  \nSubject: <Subject B>  \nBody:  \n<Paragraph 1>  \n\n<Paragraph 2>  \n\n<Paragraph 3>  \n\n--- EMAIL 3 ---\nContact Name: <Name C>  \nRole: <Role C>  \nEmail ID: <emailC@company.com>  \nSubject: <Subject C>  \nBody:  \n<Paragraph 1>  \n\n<Paragraph 2>  \n\n<Paragraph 3>  \n\n---\n\n🚫 Do NOT return any explanations, commentary, markdown, or extra formatting outside this structure. Only return clean, fully written cold emails.",
+        "options": {
+          "systemMessage": "=💌 Your Role as a Cold Email Generation Agent\n\nYou are an autonomous outreach-generation and lead-targeting agent within a multi-agent system called FirstHello. Your role is to identify *3 high-impact human contacts* within a target company and generate *1 personalized, emotionally intelligent cold email* for each.\n\nYou must rely on available *open web information* to generate real-sounding outreach messages.\n\n---\n\n⚡ Core Operating Principles:\n✅ ALWAYS return exactly 3 contacts, each with their own unique outreach email  \n✅ NEVER repeat tone, phrasing, or structure across emails  \n✅ ALWAYS reflect the campaign’s ethical tone and urgency  \n✅ NEVER use templated or robotic language  \n✅ NEVER exceed 1 email per contact\n\n---\n\n🔍 Contact Discovery Instructions:\n\nYou are expected to find 3 relevant decision-makers (CSR, ESG, PR, or sustainability leadership) using the following sources:\n\n🧠 Sources You Can Scrape:\n• *LinkedIn* – profiles, job titles, company affiliations, post content  \n• *Twitter (X)* – bios, recent tweets, pinned posts, cause involvement  \n• *Instagram* – bio descriptions, campaign-related content  \n• *Company Website* – About Us, CSR pages, press team, leadership  \n• *Public Databases* – e.g., CSR reports, board member lists  \n• If needed, generate plausible, professional-sounding names/emails using fallback logic\n\n---\n\nFor each contact, extract:\n• Contact Name  \n• Role or Title  \n• Professional Email Address (estimated or verified)  \n• Any recent post/insight used for personalization (optional, for better writing)  \n\n---\n\n✉ Output Requirements:\nReturn 3 unique email entries. Each must include:\n\n- Contact Name  \n- Role  \n- Email ID  \n- Subject Line  \n- Plain-text Email Body (150–200 words) with paragraph spacing\n\nEach email should have:\n1. A warm and respectful greeting  \n2. A short intro of the sender and campaign purpose  \n3. A cause-aligned message that resonates with the contact’s role  \n4. A soft call to action and thank you  \n\n---\n\n🛑 Final Delivery Rules:\n✅ Use plain text only – no markdown, no HTML  \n✅ No explanations, commentary, or summaries  \n✅ Return only in the following structure:\n\n--- EMAIL 1 ---\nContact Name: <Name A>  \nRole: <Role A>  \nEmail ID: <emailA@company.com>  \nSubject: <Subject A>  \nBody:  \n<Paragraph 1>  \n\n<Paragraph 2>  \n\n<Paragraph 3>  \n\n...repeat for EMAIL 2 and EMAIL 3...",
+          "maxIterations": 100,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "15a6342a-d3cb-4a7d-8b95-b34b6c2ed6e5",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        440,
+        1020
+      ],
+      "retryOnFail": true,
+      "typeVersion": 1.6,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Search the Open Paws database — a curated knowledge base containing text content relevant to veganism, animal advocacy, and related topics.\n\nThis tool uses a GraphQL hybrid search to return up to 5 highly relevant results, including summaries, content type, publication date, and source URLs.\n\nUse this tool to search the Open Paws database, which contains information relevant to veganism and animal advocacy. The database is queried using GraphQL. \n\nYou MUST use the exact GraphQL query format provided below, replacing only the text \"YOUR QUERY GOES HERE\" with the user's search terms. Do not modify any other part of the query. \n\nGraphQL Query Format: \n\n{\n  \"query\": \"{ Get { Content( hybrid: { query: \\\"YOUR QUERY GOES HERE\", alpha: 0.75 } limit: 5 ) { summary main_text content_type source_url date _additional { certainty distance } } } }\"\n}\n\nUse this tool when:\n\n    The request involves animal ethics, plant-based policies, farming systems, climate links to agriculture, or advocacy strategy.\n\n    You want grounded, topic-specific content beyond what generic search or Wikipedia might offer.\n\n    You need summaries with source credibility and relevance scores.",
+        "method": "POST",
+        "url": "https://larnd9rle1zwapsdcqw.c0.us-east1.gcp.weaviate.cloud/v1/graphql",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "model",
+        "optimizeResponse": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1060,
+        1380
+      ],
+      "id": "feb072a3-fcbd-457c-9ed0-e692747a18ab",
+      "name": "Database Retrieval",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "wHyOjsAHPPFPa6bd",
+          "name": "Open Paws Database Retrieval"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Strategic reasoning engine. Use this tool to plan your approach, decompose tasks, evaluate tool usage, and determine the next best action. Always begin and revisit with this tool after each step. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        1380
+      ],
+      "id": "df0065fe-c36d-4537-b58b-2843a24849ca",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "operation": "emailFinder",
+        "domain": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Domain', ``, 'string') }}",
+        "firstname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_Name', ``, 'string') }}",
+        "lastname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Last_Name', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        1380
+      ],
+      "id": "9f40eee3-04f5-41cf-b061-c13b09ae05f3",
+      "name": "Email Finder",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "emailVerifier",
+        "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.hunterTool",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        1380
+      ],
+      "id": "2992beee-8ead-4674-8147-00e194afc73f",
+      "name": "Email Verifier",
+      "credentials": {
+        "hunterApi": {
+          "id": "YRQQ74aM1jCya6TV",
+          "name": "Open Paws Hunter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a00c3a15-d3c4-433d-a22e-3524e67e7848",
+              "name": "body.userName",
+              "value": "={{ $json.body.userName }}",
+              "type": "string"
+            },
+            {
+              "id": "96de8e57-9c90-43f5-9338-359e85dbdfe0",
+              "name": "body.location",
+              "value": "={{ $json.body.location }}",
+              "type": "string"
+            },
+            {
+              "id": "7f7d6a37-db72-4197-901f-49228890a1cd",
+              "name": "body.campaignGoal",
+              "value": "={{ $json.body.campaignGoal }}",
+              "type": "string"
+            },
+            {
+              "id": "12ac7f60-7304-4782-9047-b4ba33212f9e",
+              "name": "body.targetCompany",
+              "value": "={{ $json.body.targetCompany }}",
+              "type": "string"
+            },
+            {
+              "id": "e93f395d-e90f-4214-8a54-7c6547112b2e",
+              "name": "body.industry",
+              "value": "={{ $json.body.industry }}",
+              "type": "string"
+            },
+            {
+              "id": "9153227c-5320-4e8c-962b-73bcd0fdc493",
+              "name": "body.sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        140,
+        1020
+      ],
+      "id": "e965e356-ade8-4412-8da4-598afa4c5da8",
+      "name": "Set Fields"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to read a specific post on Twitter by passing in the {tweetId}, which is the ID for the specific Twitter post you want to read, for example, if you have a url like https://x.com/avirtualvegan/status/1858278734731854212 then \"1858278734731854212\" is the {tweetId}",
+        "url": "http://api.scrapingdog.com/x/post?tweetId={tweetId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{tweetId}",
+              "description": "The ID for the tweet you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        1380
+      ],
+      "id": "a9b0f4f2-c80e-4fd2-878b-5fa0a8940756",
+      "name": "Twitter Post Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to scrape posts from a specific profile on Twitter by passing in the {profileId}, which is the ID for the specific Twitter profile you want to scrape, for example, if you have a url like https://x.com/avirtualvegan then \"avirtualvegan\" is the {profileId}",
+        "url": "http://api.scrapingdog.com/x/profile?profileId={profileId}&parsed=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{profileId}",
+              "description": "The ID for the profile you want to scrape"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        1380
+      ],
+      "id": "a126d7cf-34a3-49b7-8513-e31765a50c1d",
+      "name": "Twitter Profile Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Scrapes public Instagram post data from profiles such as captions, metadata, hashtags, and image URLs.\n\nUse this tool to read the posts from an Instagram profile by passing in the {username}, which is the username for the Instagram profile you want to read the posts from",
+        "url": "https://api.scrapingdog.com/instagram/profile?username={username}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{username}",
+              "description": "The username for the Instagram profile you want to read the posts from"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        580,
+        1380
+      ],
+      "id": "0c008fb2-277d-4a27-87df-b3cd7f64d357",
+      "name": "Instagram Profile Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Extracts public profile information from LinkedIn, including name, title, company, and summary when available. You can use this tool for both person and company profiles.\n\nUse this tool to read the posts from a Linkedin profile by passing in the {linkedinID}, this is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the {linkedinID} is \"sam-tucker-vegan\", but without the quotation marks and for \"https://www.linkedin.com/company/99378569\" the {linkedinID} is \"99378569\"",
+        "url": "https://api.scrapingdog.com/linkedin?type=profile&linkId={linkedinID}&private=false",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "{linkedinID}",
+              "description": "This is the part at the end of the Linkedin URL that identifies the account, for example, in \"https://www.linkedin.com/in/sam-tucker-vegan/\" the Linkedin ID is \"sam-tucker-vegan\"",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        420,
+        1380
+      ],
+      "id": "684bb1ee-05ad-4aee-80c0-4813d77cd174",
+      "name": "Linkedin Person and Company Scraper",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "qCwN8Z8q1nRtl0uk",
+          "name": "Open Paws Scraping Dog API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11defbd0-2c53-49bc-92bb-d8018b4c2773",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1180,
+        760
+      ],
+      "id": "4d8c6463-38df-4983-93ae-d382e7cfd5d2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#USER QUERY\n\n{{ $('Set Fields').item.json.chatInput }}\n\n# INFORMATION EXTRACTED BY AGENT\n\n{{ JSON.stringify($json.intermediateSteps).slice(0, 500000) }}\n\n# INSTRUCTIONS \n\nAnswer the user's query based on the information extracted by the agent",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1520,
+        760
+      ],
+      "id": "274a288d-76b0-4beb-975b-89c411e733f6",
+      "name": "Fix Empty Response"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        920
+      ],
+      "id": "db624ea6-efbd-4d46-8750-5e32b9edb9e5",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MbZeOmzEvhHVHv6G",
+          "name": "Open Paws OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ca5496a-84d5-4a75-b238-6753eab74559",
+              "name": "output",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "9b60ba10-7559-4507-9250-bd4c36cb9efc",
+              "name": "intermediateSteps",
+              "value": "={{ $('AI Agent').item.json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1960,
+        760
+      ],
+      "id": "b2595c09-6c34-44f4-9265-3c1723941025",
+      "name": "Set Output (If Empty)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a45bbb2-d32c-4242-9a50-3e91142eb058",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "f5592ae0-1f21-4de8-b07b-af2b49b6eeeb",
+              "name": "intermediateSteps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1740,
+        1040
+      ],
+      "id": "4d5b8325-1295-4e95-ae45-c4fdefd67d43",
+      "name": "Set Output (If Not Empty)"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to assess how a piece of text is likely to perform online and how it may be received by animal advocates. It returns two scores, each ranging from 0 (lowest) to 1 (highest):\n\n    Performance Score: Predicts how well the text will perform in public-facing online content (e.g., social media, blogs, emails).\n\n    Advocate Preference Score: Predicts how positively animal advocates are likely to respond to the text, based on factors such as cultural sensitivity, impact on animals, relevance to animal issues, rationality, insightfulness, and emotional impact.\n\nUse this tool primarily when drafting or refining public-facing content related to animal advocacy",
+        "workflowId": {
+          "__rl": true,
+          "value": "gdmEAlEeoOMezZfE",
+          "mode": "list",
+          "cachedResultName": "Code 4 Compassion Mumbai — [C4C] Text Scoring"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('text', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        1380
+      ],
+      "id": "b7639bac-9314-446a-860f-a80971639c73",
+      "name": "Score Text"
+    },
+    {
+      "parameters": {
+        "content": "## Overview\n\nThis workflow functions as a foundational sub-agent designed to be reused across advanced and multi-agentic automations. It is the base agent used in most Open Paws workflows, enabling other agents to outsource tasks related to content analysis, scoring, research, and database retrieval.\n\nIt combines multiple APIs and capabilities to provide a modular intelligence layer for tasks like evaluating text performance, running web searches, scoring messages, and extracting advocacy-relevant information from the Open Paws knowledge base.\n\n### 🔧 Integrated Tools and APIs\n\n- **Open Paws Database** – Specialized for animal advocacy content; queried via vector search with OpenAI-generated embeddings  \n- **Serper API** – For structured and reliable Google Search results  \n- **Jina AI** – For scraping webpages and extracting textual data  \n- **Scrapingdog** – For scraping social media and sites inaccessible to Jina  \n- **OpenAI API** – For generating embeddings used in vector-based semantic search of the Open Paws knowledge base  \n- **OpenRouter** – For accessing large language models (LLMs) via proxy, enabling generation, summarization, and analysis tasks  \n\n\n### 🧠 Specialized Sub-Workflow: Text Scoring\n\nIncluded is a sub-workflow that uses regression models to predict how well a piece of text will perform across key dimensions. This scoring system helps agents and workflows rank, compare, and select higher-performing messages in real time:\n\n- **Predicted performance as online content** (e.g., social media posts, email campaigns, petitions etc.)\n- **Predicted preference of animal advocates** (i.e. whether the text is relevant to animal advocacy, emotional impactful, rational, good or animals etc.)\n---\n\nUse this workflow as a plug-in intelligence unit when building larger agentic systems that require high-quality content evaluation, advocacy-aligned filtering, or domain-specific search capabilities.\n",
+        "height": 800,
+        "width": 700
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        140,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "1845787c-526a-41b0-a6ee-e3b2b49f38e4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        1380
+      ],
+      "id": "c0b08445-2771-40db-bd5c-dc9d1b5cb989",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Call this tool to return all text from the given website. Query should be full website URL. Extracts clean, readable text content from a specific webpage URL. Ideal for scraping articles, blog posts, product pages, or structured written content.",
+        "url": "=https://r.jina.ai/{url}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "url",
+              "description": "The URL of the website you want to scrape e.g. https://wikipedia.com",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "cc42271c-74be-4e57-8f1d-bfd088ccb758",
+      "name": "Web Scraper Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        80,
+        1380
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "feZay62YDz6Z8OKF",
+          "name": "Open Paws Jina AI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1020
+      ],
+      "id": "9f610bec-a10e-4fc9-bfbc-c612a254da7e",
+      "name": "Webhook",
+      "webhookId": "5e5f3f00-3aca-4073-af74-bf0abd4b076e"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "sendTo": "={{ $json['email id'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2340,
+        1060
+      ],
+      "id": "1fdeed51-b39b-4c14-b939-fd24ba6dc607",
+      "name": "Create a draft",
+      "webhookId": "2e37620c-00df-44cf-9043-c706da6632bd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "E2qakeKfzR598FLS",
+          "name": "hfvwghvfghvhdf"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "592a3293-f77d-499f-a151-19c80e720ab3",
+              "name": "=contact name",
+              "value": "={{ $json.output.split('\\n')[0].replace('Contact Name: ', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "44feb4fd-2158-4bae-916b-59e94d2c2643",
+              "name": "=role",
+              "value": "={{ $json.output.split('\\n')[1].replace('Role: ', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "c630d7b1-bf7b-4958-b732-c1b6e60ea33a",
+              "name": "=email id",
+              "value": "={{ $json.output.split('\\n')[2].replace('Email ID: ', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "db2c75e1-3c2e-4e4e-bc0a-73892fae75a5",
+              "name": "=subject",
+              "value": "={{ $json.output.split('\\n')[4].replace('Subject: ', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "37175e79-1705-4121-8891-ff0ce066c8a1",
+              "name": "=body",
+              "value": "={{ $json.output.split('\\n').slice(5).join('\\n').replace(/Body:\\s*/i, '').trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        1060
+      ],
+      "id": "9887ce9e-af16-4474-aafd-031827ba3be3",
+      "name": "Split Subject and Body"
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputText = $json[\"output\"]; // Replace with your field name if different\n\nconst emailBlocks = outputText.split(/--- EMAIL \\d+ ---/).filter(Boolean);\n\nconst drafts = emailBlocks.map(block => {\n  const contactName = block.match(/Contact Name:\\s*(.+)/)?.[1]?.trim() || \"\";\n  const role = block.match(/Role:\\s*(.+)/)?.[1]?.trim() || \"\";\n  const emailId = block.match(/Email ID:\\s*(.+)/)?.[1]?.trim() || \"\";\n  const subject = block.match(/Subject:\\s*(.+)/)?.[1]?.trim() || \"\";\n\n  const bodyStart = block.indexOf(\"Dear \");\n  const body = bodyStart !== -1 ? block.substring(bodyStart).trim() : \"\";\n\n  return {\n    contactName,\n    role,\n    emailId,\n    subject,\n    body\n  };\n});\n\nreturn drafts.map(d => ({ json: d }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        1020
+      ],
+      "id": "e0297bf8-3aa7-4e7a-aaef-46eee6ea6889",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "sendTo": "={{ $json.emailId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        1020
+      ],
+      "id": "02dff23d-483e-47f9-ab95-6864cbcedd0e",
+      "name": "Create a draft1",
+      "webhookId": "2e37620c-00df-44cf-9043-c706da6632bd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "E2qakeKfzR598FLS",
+          "name": "hfvwghvfghvhdf"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Serper API": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database Retrieval": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Finder": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Verifier": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Post Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Profile Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Profile Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Person and Company Scraper": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Fix Empty Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Output (If Not Empty)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Empty Response": {
+      "main": [
+        [
+          {
+            "node": "Set Output (If Empty)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fix Empty Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Text": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Scraper Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Output (If Not Empty)": {
+      "main": [
+        [
+          {
+            "node": "Split Subject and Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Subject and Body": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26e4c079-2dae-407e-a205-225df9ff0886",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ca542e91d57140b8725fd754a276e1f7d7954fbd0b4ac3938664ff03ca9bbfa"
+  },
+  "id": "09zzcSZtnD6FdFFM",
+  "tags": []
+}
