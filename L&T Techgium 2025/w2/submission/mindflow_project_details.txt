@@ -1,0 +1,74 @@
+================================================================================
+                              MINDFLOW
+                Intelligent Rubrics-Based Evaluator
+================================================================================
+
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+MindFlow is an intelligent, AI-powered Learning Management System (LMS) designed to automate the evaluation of student coursework. It bridges the gap between traditional manual grading and automated, rubric-based feedback. By simulating backend processing, MindFlow enables instructors to create assignments linked to specific grading rubrics, and allows students to upload their logic-based coursework (flowcharts, pseudocode, algorithms) for automated AI evaluation.
+
+2. CORE FEATURES
+--------------------------------------------------------------------------------
+A. Authentication & Roles
+   - Secure login simulation with a protected routing system.
+   - Dual-role environment: 'Instructor' and 'Student'.
+   - Unauthenticated users are redirected to the Login page.
+   - 1.5-second realistic loading delay on login for UX enhancement.
+
+B. Instructor Dashboard & Tools
+   - Analytics Overview: Real-time calculation of Average Score by Assignment and Pass/Fail rates visualized via Recharts.
+   - Recent Evaluations Table: View all recent student submissions, their scores, dynamic statuses ("Pass" vs "Fail"), and AI feedback.
+   - Submission Viewer: Clicking on a student's name pops open a modal displaying their submitted file (simulated via Base64 storage).
+   - Assignment Manager: Instructors can create new assignments and strictly link them to specific evaluation rubrics via a dropdown menu.
+   - Rubric Builder: Define custom evaluation criteria (e.g., Logic, Naming, Structure) across different project types (Flowcharts, Pseudocode).
+
+C. Student Experience & Submissions
+   - Secure File Upload: Students can drag-and-drop or select assignments for submission.
+   - Automated Compression: The system automatically compresses uploaded images (downscaling to max 800px and 60% JPEG quality) to prevent storage quota limits.
+   - AI Evaluation Simulation: A realistic 28-second loading phase simulates backend OCR and LLM-based rubric evaluation.
+   - Dynamic Grading Engine: 
+      - General submissions receive randomized mock scores between 40% - 100%.
+      - Strict grading policy: Scores >= 60% are marked as "Pass" (Green Badge), < 60% are "Fail" (Red Badge).
+   - Specific Grading Profiles (Hardcoded for Demo):
+      - 'rohit.jpg/png': Fails automatically (55%) with specific feedback on incorrect diamond logic and print shapes.
+      - 'jay.pdf': Passes automatically (97-100%) with feedback praising correct logic but noting clarity needs.
+      - 'mayank.jpg': Perfect score (100%) with feedback stating perfect execution of rubrics at every stage.
+      - 'hetvi.png': Passes with a penalty (75%) noting the leap year logic should be 400 instead of 100.
+   - Student Dashboard: Displays identical statistics and tables to the instructor, filtered for their own submissions, ensuring full transparency of scores and feedback.
+
+D. AI Socratic Coach
+   - Dedicated learning tool accessible to Students via the sidebar.
+   - Powered by a local Ollama integration (model: llama3).
+   - Engages students through Socratic questioning rather than just providing answers, guiding them to understand their logic errors.
+   - Features real-time AI response streaming and extensive error handling for connection issues.
+
+E. Data Management & Settings
+   - Comprehensive system built on browser `localStorage` to simulate a fully functional database without requiring a backend.
+   - 'Reset All Data' functionality allowing instructors to wipe all student submissions, reset the analytics, and clear the dashboard for a new grading period.
+
+3. TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+- Frontend Framework: React with Vite, utilizing TypeScript for type safety.
+- Styling: Tailwind CSS, providing a modern, responsive, glassmorphism-inspired UI with CSS variables for dynamic themes.
+- UI Components: Shadcn UI (Radix UI primitives) for accessible interfaces (Dialogs, Buttons, Inputs, Tables).
+- Animation: Framer Motion for smooth page transitions, list loading animations, and engaging micro-interactions.
+- Charts: Recharts for plotting dynamic analytics data into Bar and Pie charts.
+- Routing: React Router DOM for handling navigation (`/login`, `/dashboard`, `/analytics`, `/ai-coach`, etc.).
+- Icons: Lucide React for consistent, scalable SVG iconography.
+- AI Integration: Fetch API connecting to a local Ollama instance (`http://localhost:11434/api/chat`).
+- Simulation Logic: Advanced manipulation of the browser's `FileReader` and HTML5 `<canvas>` APIs for image processing, alongside robust `localStorage` event listeners to sync data across components instantly.
+
+4. ENGAGEMENT METRICS (SIMULATED DATA)
+--------------------------------------------------------------------------------
+- Active Users: 1,245 Students, 42 Instructors
+- Total Submissions Processed (All Time): 15,892
+- AI Coach Interactions / Month: 42,300 messages exchanged
+- Average Evaluation Time Saved / Instructor: 18 hours per month
+- System Uptime (Mock): 99.98%
+- Platform Likes/Upvotes: 8,402 Positive Ratings
+- Average Student Satisfaction Score: 4.8 / 5.0
+
+================================================================================
+Generated on: 2026-02-20
+Project: MindFlow Prototype
+================================================================================
